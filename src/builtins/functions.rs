@@ -41,7 +41,7 @@ pub trait Function: Sync + Send {
 
 impl<F> Function for F
 where
-    F: Fn(&HashMap<String, Value>) -> Result<Value> + Sync + Send,
+    F: for<'x> Fn(&'x HashMap<String, Value>) -> Result<Value> + Sync + Send,
 {
     fn call(&self, args: &HashMap<String, Value>) -> Result<Value> {
         self(args)

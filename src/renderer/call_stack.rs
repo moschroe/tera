@@ -13,14 +13,14 @@ use std::sync::Arc;
 
 /// Contains the user data and allows no mutation
 #[derive(Debug)]
-pub struct UserContext<'a> {
+pub struct UserContext<'a, 'c> {
     /// Read-only context
-    inner: &'a Context,
+    inner: &'a Context<'c>,
 }
 
-impl<'a> UserContext<'a> {
+impl<'a, 'c> UserContext<'a, 'c> {
     /// Create an immutable user context to be used in the call stack
-    pub fn new(context: &'a Context) -> Self {
+    pub fn new(context: &'a Context<'c>) -> Self {
         UserContext { inner: context }
     }
 
@@ -38,16 +38,16 @@ impl<'a> UserContext<'a> {
 
 /// Contains the stack of frames
 #[derive(Debug)]
-pub struct CallStack<'a> {
+pub struct CallStack<'a, 'c> {
     /// The stack of frames
     stack: Vec<StackFrame<'a>>,
     /// User supplied context for the render
-    context: UserContext<'a>,
+    context: UserContext<'a, 'c>,
 }
 
-impl<'a> CallStack<'a> {
+impl<'a, 'c> CallStack<'a, 'c> {
     /// Create the initial call stack
-    pub fn new(context: &'a Context, template: &'a Template) -> CallStack<'a> {
+    pub fn new(context: &'a Context<'c>, template: &'a Template) -> CallStack<'a, 'c> {
         CallStack {
             stack: vec![StackFrame::new(FrameType::Origin, "ORIGIN", template)],
             context: UserContext::new(context),
@@ -132,7 +132,7 @@ impl<'a> CallStack<'a> {
         None
     }
 
-    pub fn lookup_function(&self, fn_name: &str) -> Option<&Arc<dyn FunctionRelaxed>> {
+    pub fn lookup_function(&self, fn_name: &str) -> Option<&Arc<dyn FunctionRelaxed + 'c>> {
         self.context.inner.get_function(fn_name)
     }
 
